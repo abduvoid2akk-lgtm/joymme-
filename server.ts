@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
+import fs from "fs";
 import cors from "cors";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
@@ -111,6 +112,11 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
+    
+    // Serve index.html for all other routes (SPA fallback)
+    app.get("*", (req, res) => {
+      res.type("text/html").send(vite.transformIndexHtml("/", fs.readFileSync(path.join(process.cwd(), "index.html"), "utf-8")));
+    });
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
